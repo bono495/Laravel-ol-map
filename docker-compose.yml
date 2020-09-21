@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+    postgres:
+      image: postgres:11
+      ports:
+          - "5432:5432"
+      env_file:
+          - .env
+      volumes:
+          - postgres-data:/var/lib/postgresql/data
+      environment:
+          POSTGRES_DB: mapavel
+          POSTGRES_USER: gisarts
+          POSTGRES_PASSWORD: arts@gis
+
+    app:
+      build:
+        context: ./docker/app
+      depends_on:
+        - postgres
+      env_file:
+        - .env
+      volumes:
+        - .:/var/www/html
+      tmpfs:
+        - /var/www/html/storage:uid=33,gid=33
+        - /var/www/html/storage/framework:uid=33,gid=33
+        - /var/www/html/storage/framework/cache:uid=33,gid=33
+        - /var/www/html/storage/framework/sessions:uid=33,gid=33
+        - /var/www/html/storage/framework/views:uid=33,gid=33
+        - /var/www/html/storage/app/public:uid=33,gid=33
+        - /var/www/html/storage/import/shapes:uid=33,gid=33
+        - /var/www/html/bootstrap/cache:uid=33,gid=33
+      ports:
+        - "8000:80"
+
+    node:
+      image: node:12-alpine
+      working_dir: /var/www/html
+      volumes:
+        - ./:/var/www/html
+      command: sh -c "npm install && npm run watch"
+
+
+volumes:
+    postgres-data:
+
+

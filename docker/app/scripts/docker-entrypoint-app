@@ -1,0 +1,36 @@
+#!/bin/bash
+
+PHP_EXT=(intl mcrypt pdo_pgsql opcache zip gd)
+
+# Install packages
+apt-get update
+apt-get install --no-install-recommends -y libicu-dev libmcrypt-dev postgresql libpq-dev libfontconfig1 libxrender1 libxext6
+
+# Install missing php extensions
+for ext in ${PHP_EXT[@]}; do
+    if [ -z $(php -m | grep -i ${ext}) ]; then
+        echo >&2 "Installing PHP ${ext} extension..."
+        docker-php-ext-install ${ext}
+    fi
+done
+
+# Copy PHP configuration
+cp /usr/src/config/php.ini /usr/local/etc/php/conf.d/boom-php.ini
+
+# Enable mod_rewrite
+a2enmod rewrite
+a2enmod headers
+a2enmod expires
+
+# Symlink wwwroot
+cd /var/www
+rm -Rf /var/www/html
+ln -sv /usr/src/boom/public /var/www/html
+
+# Chmod storage folder (tmpfs)
+mkdir -p /usr/src/boom/storage/framework/{cache,sessions,views}
+chmod -R a+w /usr/src/boom/storage
+
+cd /var/www/html
+
+exec docker-php-entrypoint "$@"
