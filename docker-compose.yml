@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
     postgres:
-      image: postgres:11
+      build: ./postgres
       ports:
           - "5432:5432"
       env_file:
@@ -41,6 +41,9 @@ services:
       volumes:
         - ./:/var/www/html
       command: sh -c "npm install && npm run watch"
+      depends_on:
+        - postgres
+        - app
 
 
 volumes:

@@ -25,7 +25,8 @@
     </head>
     <body class="antialiased">
         <div id="app">
-            <example-component></example-component>
+            {{-- {{ (string) json_encode($element) }} --}}
+            <example-component :features="{{json_encode($features)}}"></example-component>
         </div>
     </body>
 </html>
